@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SortOutMyMusicLib", "SortOutMyMusicLib\SortOutMyMusicLib.csproj", "{EFC47031-FC3A-47E8-9D99-F4656857EB34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SortOutMyMusicLib.Lib", "ClassLibrary1\SortOutMyMusicLib.Lib.csproj", "{75826B92-9744-4549-A6B2-516E6F2212F4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SortOutMyMusicLib.Lib", "SortOutMyMusicLib.Lib\SortOutMyMusicLib.Lib.csproj", "{75826B92-9744-4549-A6B2-516E6F2212F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
