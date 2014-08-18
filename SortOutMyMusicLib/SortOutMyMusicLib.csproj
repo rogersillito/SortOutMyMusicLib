@@ -61,7 +61,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ClassLibrary1\SortOutMyMusicLib.Lib.csproj">
+    <ProjectReference Include="..\SortOutMyMusicLib.Lib\SortOutMyMusicLib.Lib.csproj">
       <Project>{75826b92-9744-4549-a6b2-516e6f2212f4}</Project>
       <Name>SortOutMyMusicLib.Lib</Name>
     </ProjectReference>

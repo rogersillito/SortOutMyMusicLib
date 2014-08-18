@@ -74,9 +74,7 @@ namespace SortOutMyMusicLib.Lib
 
         private void CheckRequiredTagMetadataExists(ContainerDir containerDir, IssueLog issues)
         {
-            var filesWithMetadataIssues = _tagMetadataHelper.ValidateMetadataIn(containerDir);
-            throw new NotImplementedException();
-            issues.MetadataNeedsFixing = true;
+            issues.MetadataNeedsFixing = !_tagMetadataHelper.ValidateMetadataIn(containerDir);
         }
 
         private void CheckTracksAreInITunesLib(ContainerDir containerDir, IssueLog issues)
