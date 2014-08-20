@@ -13,6 +13,12 @@ namespace SortOutMyMusicLib.Lib
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof (DirToDoList));
         private IList<ContainerDir> _list;
+        private readonly IImageHelpers _imageHelpers;
+
+        public DirToDoList(IImageHelpers imageHelpers)
+        {
+            _imageHelpers = imageHelpers;
+        }
 
         public void Add(IList<ContainerDir> containerDirs)
         {
@@ -26,6 +32,7 @@ namespace SortOutMyMusicLib.Lib
                 return null;
             var dir = _list[0];
             _list.RemoveAt(0);
+            _imageHelpers.SetImagesFor(dir);
             return dir;
         }
     }

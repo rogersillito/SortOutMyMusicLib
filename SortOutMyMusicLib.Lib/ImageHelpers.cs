@@ -5,18 +5,18 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using log4net;
+using TagLib;
 using TagLibFile = TagLib.File;
 
 namespace SortOutMyMusicLib.Lib
 {
     public interface IImageHelpers
     {
-        bool IsSizeAcceptable(int width, int height);
+        void SetImagesFor(ContainerDir dir);
         string GetFileExtensionFor(Image image);
         IEnumerable<CoverImage> GetCoverImagesFrom(string mediaFilePath);
-        IList<string> GetCoverImagePathsOfAcceptableSizeFrom(string dirPath);
-        bool IsAcceptableCoverImage(int width, int height, string fileExtension);
-        bool SaveCoverImagesForFirstTagIn(ContainerDir dir);
+        IList<string> GetFolderImagePathsOfAcceptableSizeFrom(string dirPath);
+        void TrySaveFolderImageFromAMediaFileIn(ContainerDir dir);
         IEnumerable<string> GetImageFilePathsFrom(string dirPath);
     }
 
@@ -30,6 +30,14 @@ namespace SortOutMyMusicLib.Lib
         {
             _appConstants = appConstants;
             _fileSystemHelpers = fileSystemHelpers;
+        }
+
+        public void SetImagesFor(ContainerDir dir)
+        {
+            foreach (var file in dir.Files)
+            {
+                file.Images = GetCoverImagesFrom(file.Path);
+            }
         }
 
         public bool IsSizeAcceptable(int width, int height)
@@ -58,23 +66,26 @@ namespace SortOutMyMusicLib.Lib
             var iNumberOfPictures = tagLibFile.Tag.Pictures.Length;
             for (var i = 0; i < iNumberOfPictures; i++)
             {
-                var image = (Image)ic.ConvertFrom(tagLibFile.Tag.Pictures[i].Data.Data);
-                var type = tagLibFile.Tag.Pictures[i].Type.ToString();
-                yield return new CoverImage {ImageData = image, Type = type};
+                var picture = tagLibFile.Tag.Pictures[i];
+                var image = (Image)ic.ConvertFrom(picture.Data.Data);
+                yield return new CoverImage 
+                {
+                    ImageData = image, 
+                    Type = picture.Type,
+                    IsAcceptableSize = ImageIsOfAcceptableSize(image.Width, image.Height), 
+                    FileExtension = GetFileExtensionFor(image),
+                    CheckSum = picture.Data.Checksum
+                };
             }
+            tagLibFile.Dispose();
         }
 
-        public IList<string> GetCoverImagePathsOfAcceptableSizeFrom(string dirPath)
+        public IList<string> GetFolderImagePathsOfAcceptableSizeFrom(string dirPath)
         {
             return GetImageFilePathsFrom(dirPath).Where(ImageIsOfAcceptableSize).ToList();
         }
 
-        public bool IsAcceptableCoverImage(int width, int height, string fileExtension)
-        {
-            return ImageIsOfAcceptableSize(width, height) && fileExtension == ".jpg";
-        }
-
-        private bool ImageIsOfAcceptableSize(int width, int height)
+        public bool ImageIsOfAcceptableSize(int width, int height)
         {
             return width >= _appConstants.MinAcceptableImageDimension && height >= _appConstants.MinAcceptableImageDimension;
         }
@@ -85,25 +96,25 @@ namespace SortOutMyMusicLib.Lib
                 return ImageIsOfAcceptableSize(img.Width, img.Height);
         }
 
-        public bool SaveCoverImagesForFirstTagIn(ContainerDir dir)
+        public void TrySaveFolderImageFromAMediaFileIn(ContainerDir dir)
         {
-            var mediaFile = dir.FilePaths.FirstOrDefault();
-            var saved = false;
-            if (mediaFile == null) return saved;
-            var counter = 0;
-            foreach (var img in GetCoverImagesFrom(mediaFile))
-            {
-                var fileExtension = GetFileExtensionFor(img.ImageData);
-                if (!IsAcceptableCoverImage(img.ImageData.Width, img.ImageData.Height, fileExtension)) 
-                    continue;
-                var saveAsName = String.Concat(dir.Path, "\\", counter > 0 ? img.Type : _appConstants.CoverImageFilename, fileExtension);
-                _fileSystemHelpers.RenameIfExistingFile(saveAsName);
-                img.ImageData.Save(saveAsName);
-                Log.Info(String.Concat("Extracted a cover image: '", saveAsName, "' from '", Path.GetFileName(mediaFile), "'"));
-                saved = true;
-                counter++;
-            }
-            return saved;
+            var acceptableFolderImage = ExtractFirstAcceptableFolderImageFrom(dir);
+            if (acceptableFolderImage == null) return;
+            var saveAsPath = String.Concat(dir.Path, "\\", _appConstants.FolderImageFilename);
+            _fileSystemHelpers.RenameIfExistingFile(saveAsPath);
+            acceptableFolderImage.ImageData.Save(saveAsPath);
+            dir.FolderImagePath = saveAsPath;
+            Log.Info(String.Concat("Extracted '", _appConstants.FolderImageFilename, "' from a media file."));
+        }
+
+        private CoverImage ExtractFirstAcceptableFolderImageFrom(ContainerDir dir)
+        {
+            var allImages = dir.Files
+                .OrderBy(f => f.Name)
+                .SelectMany(mf => mf.Images);
+            return allImages.FirstOrDefault(im => im.IsAcceptableSize
+                                               && im.Type == PictureType.FrontCover
+                                               && GetFileExtensionFor(im.ImageData) == ".jpg");
         }
 
         public IEnumerable<string> GetImageFilePathsFrom(string dirPath)

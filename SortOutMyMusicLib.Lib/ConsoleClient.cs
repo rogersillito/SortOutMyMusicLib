@@ -44,15 +44,15 @@ namespace SortOutMyMusicLib.Lib
         public void DoNextDir()
         {
             var containerDir = _dirToDoList.GetNext();
-            Log.InfoFormat("Checking: \"{0}\"", containerDir.Path);
-            var dirImages = _imageHelpers.GetCoverImagePathsOfAcceptableSizeFrom(containerDir.Path);
+            Log.InfoFormat("Checking: \"{0}\"", containerDir);
+            var dirImages = _imageHelpers.GetFolderImagePathsOfAcceptableSizeFrom(containerDir.Path);
             var issues = new IssueLog();
 
-            // TASK: rename cover image file when only 1 valid cover image, and it's not called Folder.jpg
-            RenameSingleAcceptableCoverImageWhenWrongName(dirImages, containerDir.Path);
+            // TASK: rename folder image file when only 1 valid cover image, and it's not called Folder.jpg
+            RenameSingleAcceptableFolderImageWhenWrongName(dirImages, containerDir);
 
-            // TASK: When no cover img, either extract from ID3, or open explorer/chrome to search for/set artwork at first dir that needs a cover image
-            ExtractCoverImageFromFirstFoundTagIfPossible(dirImages, containerDir, issues);
+            // TASK: When no folder img, either extract from ID3, or open explorer/chrome to search for/set artwork at first dir that needs a cover image
+            UseACoverImageAsFolderImageIfPossible(dirImages, containerDir, issues);
 
             // TASK: check if all tracks in this dir are in iTunes lib
             CheckTracksAreInITunesLib(containerDir, issues);
@@ -72,6 +72,20 @@ namespace SortOutMyMusicLib.Lib
             DoNextDir();
         }
 
+        private void SaveCoverImageToTagsIfPossible(IList<string> dirImages, ContainerDir containerDir)
+        {
+            //TODO: surely i EITHER get an image from a file, or save an image into tags
+            //TODO: no, just do this after file validation (TagMetadataHelper)
+            //foreach (var file in containerDir.Files)
+            //{
+            //    if (!file.Images.Any(im => im.IsAcceptableSize) && dirImages)
+
+                
+            //}
+
+            //throw new NotImplementedException();
+        }
+
         private void CheckRequiredTagMetadataExists(ContainerDir containerDir, IssueLog issues)
         {
             issues.MetadataNeedsFixing = !_tagMetadataHelper.ValidateMetadataIn(containerDir);
@@ -79,11 +93,11 @@ namespace SortOutMyMusicLib.Lib
 
         private void CheckTracksAreInITunesLib(ContainerDir containerDir, IssueLog issues)
         {
-            var notInLib = containerDir.FilePaths.Where(fp => !_iTunesLibraryHelper.TrackIsInLibrary(fp)).ToList();
+            var notInLib = containerDir.Files.Select(f => f.Path).Where(fp => !_iTunesLibraryHelper.TrackIsInLibrary(fp)).ToList();
             if (notInLib.Count == 0)
                 return;
 
-            Log.WarnFormat("{0}/{1} tracks not in ITunes Library", notInLib.Count, containerDir.FilePaths.Count);
+            Log.WarnFormat("{0}/{1} tracks not in ITunes Library", notInLib.Count, containerDir.Files.Count);
             issues.TracksNotInITunes = true;
         }
 
@@ -93,11 +107,12 @@ namespace SortOutMyMusicLib.Lib
             throw new NotImplementedException();
         }
 
-        private void ExtractCoverImageFromFirstFoundTagIfPossible(IList<string> dirImages, ContainerDir dir, IssueLog issues)
+        private void UseACoverImageAsFolderImageIfPossible(IList<string> dirImages, ContainerDir dir, IssueLog issues)
         {
             if (dirImages.Count != 0) return;
-            if (_imageHelpers.SaveCoverImagesForFirstTagIn(dir)) return;
-            Log.Warn("Cover image needed");
+            _imageHelpers.TrySaveFolderImageFromAMediaFileIn(dir);
+            if (dir.HasFolderImage) return;
+            Log.Warn("Folder image needed");
             issues.NeedToFindACoverImage = true;
         }
 
@@ -111,14 +126,20 @@ namespace SortOutMyMusicLib.Lib
             _processRunner.Exec(ahkPath, cmdArgs, _appConstants.DevToolsDir + @"\AhkScripts");
         }
 
-        private void RenameSingleAcceptableCoverImageWhenWrongName(IList<string> dirCoverImages, string dirPath)
+        private void RenameSingleAcceptableFolderImageWhenWrongName(IList<string> dirCoverImages, ContainerDir dir)
         {
-            if (dirCoverImages.Count != 1 || String.Equals(Path.GetFileName(dirCoverImages[0]), _appConstants.CoverImageFilename, StringComparison.CurrentCultureIgnoreCase))
+            if (dirCoverImages.Count != 1 || HasFolderImageFilename(dirCoverImages))
                 return;
-            var newPath = string.Concat(dirPath, "\\", _appConstants.CoverImageFilename);
+            var newPath = string.Concat(dir.Path, "\\", _appConstants.FolderImageFilename);
             _fileSystemHelpers.RenameIfExistingFile(newPath);
             File.Move(dirCoverImages[0], newPath);
-            Log.Info(string.Concat("Renamed Cover Image: ", newPath));
+            Log.Info(string.Concat("Renamed Folder Image: ", newPath));
+            dir.FolderImagePath = newPath;
+        }
+
+        private bool HasFolderImageFilename(IList<string> dirCoverImages)
+        {
+            return String.Equals(Path.GetFileName(dirCoverImages[0]), _appConstants.FolderImageFilename, StringComparison.CurrentCultureIgnoreCase);
         }
     }
 }

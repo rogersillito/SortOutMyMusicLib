@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace SortOutMyMusicLib.Lib
 {
@@ -9,11 +10,12 @@ namespace SortOutMyMusicLib.Lib
         string MyMusicRoot { get; }
         string ITunesLibFilePath { get; }
         int MinAcceptableImageDimension { get; }
-        string CoverImageFilename { get; }
+        string FolderImageFilename { get; }
     }
 
     public class AppConstants : IAppConstants
     {
+        //TODO: make it only get values from source once.. currently happens on each property access
         private readonly IConfigReader _configReader;
 
         public AppConstants(IConfigReader configReader)
@@ -46,9 +48,10 @@ namespace SortOutMyMusicLib.Lib
             get { return Int32.Parse(_configReader.GetAppSetting("MinAcceptableImageDimension")); }
         }
 
-        public string CoverImageFilename
+        public string FolderImageFilename
         {
-            get { return _configReader.GetAppSetting("CoverImageFilename"); }
+            get { return _configReader.GetAppSetting("FolderImageFilename"); }
         }
+
     }
 }

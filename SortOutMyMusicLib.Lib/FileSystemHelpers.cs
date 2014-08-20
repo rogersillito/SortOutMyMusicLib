@@ -17,7 +17,7 @@ namespace SortOutMyMusicLib.Lib
         public IList<ContainerDir> GetPathsByContainerDirFrom(IEnumerable<string> filePaths)
         {
             var dirGroups = filePaths.Select(fp => new {Dir = Path.GetDirectoryName(fp), File = fp}).GroupBy(d => d.Dir, d => d.File);
-            var containerDirs = dirGroups.Select(dg => new ContainerDir {Path = dg.Key, FilePaths = dg.ToList()});
+            var containerDirs = dirGroups.Select(dg => new ContainerDir {Path = dg.Key, Files = dg.ToList().Select(fp => new MediaFile { Path = fp, Name = Path.GetFileName(fp)}).ToList()});
             return containerDirs.ToList();
         }
 
