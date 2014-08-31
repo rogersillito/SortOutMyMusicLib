@@ -5,9 +5,14 @@ using System.Linq;
 
 namespace SortOutMyMusicLib.Lib
 {
-    public class DirWalker
+    public interface IDirWalker
     {
-        public static IEnumerable<T> Walk<T>(string sDir, Func<string, T> callback)
+        IEnumerable<T> Walk<T>(string sDir, Func<string, T> callback);
+    }
+
+    public class DirWalker : IDirWalker
+    {
+        public IEnumerable<T> Walk<T>(string sDir, Func<string, T> callback)
         {
             foreach (var yielded in Directory.GetDirectories(sDir).SelectMany(d => Walk(d, callback)))
             {

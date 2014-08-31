@@ -8,10 +8,10 @@ using log4net;
 
 namespace SortOutMyMusicLib.Lib
 {
-    public class ConsoleClient
+    public class MusicLibTask
     {
         private const string Separator = "\n------------------------------------\n";
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ConsoleClient));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(MusicLibTask));
         private readonly IAppConstants _appConstants;
         private readonly IFileSystemHelpers _fileSystemHelpers;
         private readonly IImageHelpers _imageHelpers;
@@ -19,8 +19,9 @@ namespace SortOutMyMusicLib.Lib
         private readonly IDirToDoList _dirToDoList;
         private readonly IITunesLibraryHelper _iTunesLibraryHelper;
         private readonly ITagMetadataHelper _tagMetadataHelper;
+        private readonly IDirWalker _dirWalker;
 
-        public ConsoleClient(IAppConstants appConstants, IFileSystemHelpers fileSystemHelpers, IImageHelpers imageHelpers, IProcessRunner processRunner, IDirToDoList dirToDoList, IITunesLibraryHelper iTunesLibraryHelper, ITagMetadataHelper tagMetadataHelper)
+        public MusicLibTask(IAppConstants appConstants, IFileSystemHelpers fileSystemHelpers, IImageHelpers imageHelpers, IProcessRunner processRunner, IDirToDoList dirToDoList, IITunesLibraryHelper iTunesLibraryHelper, ITagMetadataHelper tagMetadataHelper, IDirWalker dirWalker)
         {
             _appConstants = appConstants;
             _fileSystemHelpers = fileSystemHelpers;
@@ -29,19 +30,20 @@ namespace SortOutMyMusicLib.Lib
             _dirToDoList = dirToDoList;
             _iTunesLibraryHelper = iTunesLibraryHelper;
             _tagMetadataHelper = tagMetadataHelper;
+            _dirWalker = dirWalker;
         }
 
-        public void Execute()
+        public void InitialiseAndStartDirScan()
         {
             _iTunesLibraryHelper.LoadITunesTrackLocations();
             Log.InfoFormat("Getting Media File Paths in \"{0}\"", _appConstants.MyMusicRoot);
-            var allMediaFiles = DirWalker.Walk(_appConstants.MyMusicRoot, fp => fp).Where(x => x.IsMediaFile()).ToList();
+            var allMediaFiles = _dirWalker.Walk(_appConstants.MyMusicRoot, fp => fp).Where(x => x.IsMediaFile()).ToList();
             _dirToDoList.Add(_fileSystemHelpers.GetPathsByContainerDirFrom(allMediaFiles));
             Log.Info("Data loading complete" + Separator);
-            DoNextDir();
+            RestartDirScan();
         }
 
-        public void DoNextDir()
+        public void RestartDirScan()
         {
             var containerDir = _dirToDoList.GetNext();
             Log.InfoFormat("Checking: \"{0}\"", containerDir);
@@ -69,7 +71,7 @@ namespace SortOutMyMusicLib.Lib
                 return;
 
             Log.Info("Dir is OK!" + Separator);
-            DoNextDir();
+            RestartDirScan();
         }
 
         private void SaveCoverImageToTagsIfPossible(IList<string> dirImages, ContainerDir containerDir)

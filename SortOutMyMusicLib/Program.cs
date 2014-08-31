@@ -15,7 +15,7 @@ namespace SortOutMyMusicLib
             try
             {
                 var container = DependencyResolverInitializer.Initialize();
-                container.GetInstance<ConsoleClient>().Execute();
+                container.GetInstance<MusicLibTask>().InitialiseAndStartDirScan();
             }
             catch (Exception e)
             {

@@ -53,7 +53,7 @@
   <ItemGroup>
     <Compile Include="AppConstants.cs" />
     <Compile Include="ConfigReader.cs" />
-    <Compile Include="ConsoleClient.cs" />
+    <Compile Include="MusicLibTask.cs" />
     <Compile Include="ContainerDir.cs" />
     <Compile Include="CoverImage.cs" />
     <Compile Include="DirToDoList.cs" />
