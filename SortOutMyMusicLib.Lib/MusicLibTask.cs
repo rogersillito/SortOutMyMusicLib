@@ -37,8 +37,7 @@ namespace SortOutMyMusicLib.Lib
         {
             _iTunesLibraryHelper.LoadITunesTrackLocations();
             Log.InfoFormat("Getting Media File Paths in \"{0}\"", _appConstants.MyMusicRoot);
-            var allMediaFiles = _dirWalker.Walk(_appConstants.MyMusicRoot, fp => fp).Where(x => x.IsMediaFile()).ToList();
-            _dirToDoList.Add(_fileSystemHelpers.GetPathsByContainerDirFrom(allMediaFiles));
+            _dirToDoList.Add(_fileSystemHelpers.GetContainerDirsIn(_appConstants.MyMusicRoot));
             Log.Info("Data loading complete" + Separator);
             RestartDirScan();
         }

@@ -8,13 +8,13 @@ namespace SortOutMyMusicLib.Lib
 {
     public interface IFileSystemHelpers
     {
-        IList<ContainerDir> GetPathsByContainerDirFrom(IEnumerable<string> filePaths);
         void RenameIfExistingFile(string filePath);
+        IList<ContainerDir> GetContainerDirsIn(string musicRoot);
     }
 
     public class FileSystemHelpers : IFileSystemHelpers
     {
-        public IList<ContainerDir> GetPathsByContainerDirFrom(IEnumerable<string> filePaths)
+        private IList<ContainerDir> GetPathsByContainerDirFrom(IEnumerable<string> filePaths)
         {
             var dirGroups = filePaths.Select(fp => new {Dir = Path.GetDirectoryName(fp), File = fp}).GroupBy(d => d.Dir, d => d.File);
             var containerDirs = dirGroups.Select(dg => new ContainerDir {Path = dg.Key, Files = dg.ToList().Select(fp => new MediaFile { Path = fp, Name = Path.GetFileName(fp)}).ToList()});
@@ -37,6 +37,14 @@ namespace SortOutMyMusicLib.Lib
                 newPath = getNewName(counter++);
             }
             File.Move(filePath, newPath);
+        }
+
+        public IList<ContainerDir> GetContainerDirsIn(string musicRoot)
+        {
+            throw new NotImplementedException();
+            //TODO:  pulled this out of MusicLibTask..
+            //var allMediaFiles = _dirWalker.Walk(_appConstants.MyMusicRoot, fp => fp).Where(x => x.IsMediaFile()).ToList();
+            // then return GetPathsByContainerDirFrom(allmediafiles)
         }
     }
 }
