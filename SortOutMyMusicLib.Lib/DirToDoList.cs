@@ -31,6 +31,8 @@ namespace SortOutMyMusicLib.Lib
             if (_list.Count == 0)
                 return null;
             var dir = _list[0];
+            //TODO: but what if we can't process a file, or want to add it to a white-list
+            //TODO: we need to be able to hold  a path in a pending state before doing the remove
             _list.RemoveAt(0);
             _imageHelpers.SetImagesFor(dir);
             return dir;
