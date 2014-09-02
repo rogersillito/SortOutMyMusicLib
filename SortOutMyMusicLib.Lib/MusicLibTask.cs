@@ -19,9 +19,8 @@ namespace SortOutMyMusicLib.Lib
         private readonly IDirToDoList _dirToDoList;
         private readonly IITunesLibraryHelper _iTunesLibraryHelper;
         private readonly ITagMetadataHelper _tagMetadataHelper;
-        private readonly IDirWalker _dirWalker;
 
-        public MusicLibTask(IAppConstants appConstants, IFileSystemHelpers fileSystemHelpers, IImageHelpers imageHelpers, IProcessRunner processRunner, IDirToDoList dirToDoList, IITunesLibraryHelper iTunesLibraryHelper, ITagMetadataHelper tagMetadataHelper, IDirWalker dirWalker)
+        public MusicLibTask(IAppConstants appConstants, IFileSystemHelpers fileSystemHelpers, IImageHelpers imageHelpers, IProcessRunner processRunner, IDirToDoList dirToDoList, IITunesLibraryHelper iTunesLibraryHelper, ITagMetadataHelper tagMetadataHelper)
         {
             _appConstants = appConstants;
             _fileSystemHelpers = fileSystemHelpers;
@@ -30,7 +29,6 @@ namespace SortOutMyMusicLib.Lib
             _dirToDoList = dirToDoList;
             _iTunesLibraryHelper = iTunesLibraryHelper;
             _tagMetadataHelper = tagMetadataHelper;
-            _dirWalker = dirWalker;
         }
 
         public void InitialiseAndStartDirScan()
@@ -132,7 +130,7 @@ namespace SortOutMyMusicLib.Lib
             if (dirCoverImages.Count != 1 || HasFolderImageFilename(dirCoverImages))
                 return;
             var newPath = string.Concat(dir.Path, "\\", _appConstants.FolderImageFilename);
-            _fileSystemHelpers.RenameIfExistingFile(newPath);
+            _fileSystemHelpers.RenameIfThereIsAnExistingFileAt(newPath);
             File.Move(dirCoverImages[0], newPath);
             Log.Info(string.Concat("Renamed Folder Image: ", newPath));
             dir.FolderImagePath = newPath;

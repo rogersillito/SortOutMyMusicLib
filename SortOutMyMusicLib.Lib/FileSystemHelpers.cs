@@ -8,20 +8,44 @@ namespace SortOutMyMusicLib.Lib
 {
     public interface IFileSystemHelpers
     {
-        void RenameIfExistingFile(string filePath);
+        void RenameIfThereIsAnExistingFileAt(string filePath);
         IList<ContainerDir> GetContainerDirsIn(string musicRoot);
     }
 
     public class FileSystemHelpers : IFileSystemHelpers
     {
+        private readonly IDirWalker _dirWalker;
+
+        public FileSystemHelpers(IDirWalker dirWalker)
+        {
+            _dirWalker = dirWalker;
+        }
+
+        public IList<ContainerDir> GetContainerDirsIn(string musicRoot)
+        {
+            var allMediaFiles = _dirWalker.Walk(musicRoot, fp => fp).Where(x => x.IsMediaFile()).ToList();
+            return GetPathsByContainerDirFrom(allMediaFiles);
+        }
+
         private IList<ContainerDir> GetPathsByContainerDirFrom(IEnumerable<string> filePaths)
         {
-            var dirGroups = filePaths.Select(fp => new {Dir = Path.GetDirectoryName(fp), File = fp}).GroupBy(d => d.Dir, d => d.File);
-            var containerDirs = dirGroups.Select(dg => new ContainerDir {Path = dg.Key, Files = dg.ToList().Select(fp => new MediaFile { Path = fp, Name = Path.GetFileName(fp)}).ToList()});
+            var dirGroups = filePaths
+                .Select(fp => new {Dir = Path.GetDirectoryName(fp), File = fp})
+                .GroupBy(d => d.Dir, d => d.File);
+            var containerDirs = dirGroups
+                .Select(dg => new ContainerDir
+                {
+                    Path = dg.Key, 
+                    Files = dg.ToList().Select(fp => new MediaFile
+                    {
+                        Path = fp, 
+                        Name = Path.GetFileName(fp)
+                    }).ToList()
+                });
             return containerDirs.ToList();
         }
 
-        public void RenameIfExistingFile(string filePath)
+        public void RenameIfThereIsAnExistingFileAt(string filePath)
         {
             if (!File.Exists(filePath))
                 return;
@@ -37,14 +61,6 @@ namespace SortOutMyMusicLib.Lib
                 newPath = getNewName(counter++);
             }
             File.Move(filePath, newPath);
-        }
-
-        public IList<ContainerDir> GetContainerDirsIn(string musicRoot)
-        {
-            throw new NotImplementedException();
-            //TODO:  pulled this out of MusicLibTask..
-            //var allMediaFiles = _dirWalker.Walk(_appConstants.MyMusicRoot, fp => fp).Where(x => x.IsMediaFile()).ToList();
-            // then return GetPathsByContainerDirFrom(allmediafiles)
         }
     }
 }

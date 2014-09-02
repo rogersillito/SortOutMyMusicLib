@@ -6,7 +6,7 @@ namespace SortOutMyMusicLib.Lib
     public static class Extensions
     {
         private static readonly string[] ImageExtensions = { ".jpg" };
-        private static readonly string[] MediaExtensions = { ".mp3", ".m4a", ".mp4", ".wma", ".mp2", ".wav" };
+        private static readonly string[] MediaExtensions = { ".mp3", ".m4a", ".mp4", ".wma", ".wav" };
 
         public static bool IsMediaFile(this string path)
         {

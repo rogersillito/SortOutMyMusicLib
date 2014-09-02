@@ -101,7 +101,7 @@ namespace SortOutMyMusicLib.Lib
             var acceptableFolderImage = ExtractFirstAcceptableFolderImageFrom(dir);
             if (acceptableFolderImage == null) return;
             var saveAsPath = String.Concat(dir.Path, "\\", _appConstants.FolderImageFilename);
-            _fileSystemHelpers.RenameIfExistingFile(saveAsPath);
+            _fileSystemHelpers.RenameIfThereIsAnExistingFileAt(saveAsPath);
             acceptableFolderImage.ImageData.Save(saveAsPath);
             dir.FolderImagePath = saveAsPath;
             Log.Info(String.Concat("Extracted '", _appConstants.FolderImageFilename, "' from a media file."));
