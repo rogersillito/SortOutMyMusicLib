@@ -2,6 +2,8 @@
  using System.Collections.Generic;
  using System.Data.Odbc;
  using System.Diagnostics;
+ using System.Linq;
+ using System.Net.Configuration;
  using Machine.Fakes;
  using Machine.Specifications;
  using developwithpassion.specifications.moq;
@@ -23,6 +25,8 @@ namespace SortOutMyMusicLib.Tests
             {
                 ITunesHelper = depends.on<IITunesLibraryHelper>();
                 DirToDoList = depends.on<IDirToDoList>();
+                ContainerDirTasks = depends.on<IContainerDirTasks>();
+                ImageHelpers = depends.on<IImageHelpers>();
 
                 ContainerDirsInMusicRoot.Add(new ContainerDir
                 {
@@ -34,6 +38,10 @@ namespace SortOutMyMusicLib.Tests
                         new MediaFile { Name = "Track3.m4a", Path = "C:\\Dir1\\Track3.m4a" }
                     }
                 });
+
+                ImageHelpers
+                    .WhenToldTo(x => x.GetFolderImagePathsOfAcceptableSizeFrom(ContainerDirsInMusicRoot[0].Path))
+                    .Return(FolderImagePaths);
 
                 FileSystemHelpers = depends.on<IFileSystemHelpers>();
                 FileSystemHelpers
@@ -53,6 +61,9 @@ namespace SortOutMyMusicLib.Tests
             public static IITunesLibraryHelper ITunesHelper;
             public static IFileSystemHelpers FileSystemHelpers;
             public static IList<ContainerDir> ContainerDirsInMusicRoot = new List<ContainerDir>();
+            public static IContainerDirTasks ContainerDirTasks;
+            public static IImageHelpers ImageHelpers;
+            public static IList<string> FolderImagePaths = new List<string>();
         }
 
         [Subject(typeof(MusicLibTask))]
@@ -78,6 +89,12 @@ namespace SortOutMyMusicLib.Tests
 
             private It should_get_the_next_dir_to_scan = () =>
                 DirToDoList.WasToldTo(x => x.GetNext()).OnlyOnce();
+
+            private It should_get_folder_images_in_the_ContainerDir = () =>
+                ImageHelpers.WasToldTo(x => x.GetFolderImagePathsOfAcceptableSizeFrom(ContainerDirsInMusicRoot[0].Path));
+
+            private It should_rename_incorrectly_named_folder_images = () =>
+                ContainerDirTasks.WasToldTo(x => x.RenameSingleAcceptableFolderImageWhenWrongName(FolderImagePaths, ContainerDirsInMusicRoot[0]));
         }
     }
 }

@@ -19,8 +19,9 @@ namespace SortOutMyMusicLib.Lib
         private readonly IDirToDoList _dirToDoList;
         private readonly IITunesLibraryHelper _iTunesLibraryHelper;
         private readonly ITagMetadataHelper _tagMetadataHelper;
+        private readonly IContainerDirTasks _containerDirTasks;
 
-        public MusicLibTask(IAppConstants appConstants, IFileSystemHelpers fileSystemHelpers, IImageHelpers imageHelpers, IProcessRunner processRunner, IDirToDoList dirToDoList, IITunesLibraryHelper iTunesLibraryHelper, ITagMetadataHelper tagMetadataHelper)
+        public MusicLibTask(IAppConstants appConstants, IFileSystemHelpers fileSystemHelpers, IImageHelpers imageHelpers, IProcessRunner processRunner, IDirToDoList dirToDoList, IITunesLibraryHelper iTunesLibraryHelper, ITagMetadataHelper tagMetadataHelper, IContainerDirTasks containerDirTasks)
         {
             _appConstants = appConstants;
             _fileSystemHelpers = fileSystemHelpers;
@@ -29,6 +30,7 @@ namespace SortOutMyMusicLib.Lib
             _dirToDoList = dirToDoList;
             _iTunesLibraryHelper = iTunesLibraryHelper;
             _tagMetadataHelper = tagMetadataHelper;
+            _containerDirTasks = containerDirTasks;
         }
 
         public void InitialiseAndStartDirScan()
@@ -47,9 +49,10 @@ namespace SortOutMyMusicLib.Lib
             var dirImages = _imageHelpers.GetFolderImagePathsOfAcceptableSizeFrom(containerDir.Path);
             var issues = new IssueLog();
 
-            // TASK: rename folder image file when only 1 valid cover image, and it's not called Folder.jpg
-            RenameSingleAcceptableFolderImageWhenWrongName(dirImages, containerDir);
+            _containerDirTasks.RenameSingleAcceptableFolderImageWhenWrongName(dirImages, containerDir);
 
+            return;
+            //TODO: move tasks to ContainerDirTasks and test..
             // TASK: When no folder img, either extract from ID3, or open explorer/chrome to search for/set artwork at first dir that needs a cover image
             UseACoverImageAsFolderImageIfPossible(dirImages, containerDir, issues);
 

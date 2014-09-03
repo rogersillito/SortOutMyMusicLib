@@ -63,9 +63,12 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="SystemWrapper">
+      <HintPath>..\packages\SystemWrapper.0.4\lib\SystemWrapper.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ContainerDirTasksSpecs.cs" />
+    <Compile Include="ContainerDirTasks_RenameSingleAcceptableFolderImageWhenWrongName_Specs.cs" />
     <Compile Include="FileSystemHelpersSpecs.cs" />
     <Compile Include="MusicLibTaskSpecs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
