@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
-using System.IO;
 using System.Linq;
 using log4net;
 
@@ -50,12 +49,10 @@ namespace SortOutMyMusicLib.Lib
             var issues = new IssueLog();
 
             _containerDirTasks.RenameSingleAcceptableFolderImageWhenWrongName(dirImages, containerDir);
-
+            _containerDirTasks.UseACoverImageAsFolderImageIfPossible(dirImages, containerDir, issues);
             return;
-            //TODO: move tasks to ContainerDirTasks and test..
-            // TASK: When no folder img, either extract from ID3, or open explorer/chrome to search for/set artwork at first dir that needs a cover image
-            UseACoverImageAsFolderImageIfPossible(dirImages, containerDir, issues);
 
+            //TODO: move tasks to ContainerDirTasks and test..
             // TASK: check if all tracks in this dir are in iTunes lib
             CheckTracksAreInITunesLib(containerDir, issues);
 
@@ -109,15 +106,6 @@ namespace SortOutMyMusicLib.Lib
             throw new NotImplementedException();
         }
 
-        private void UseACoverImageAsFolderImageIfPossible(IList<string> dirImages, ContainerDir dir, IssueLog issues)
-        {
-            if (dirImages.Count != 0) return;
-            _imageHelpers.TrySaveFolderImageFromAMediaFileIn(dir);
-            if (dir.HasFolderImage) return;
-            Log.Warn("Folder image needed");
-            issues.NeedToFindACoverImage = true;
-        }
-
         private void OpenHelperAppsToFindACoverImage(string dirPath)
         {
             var ahkScriptName = _appConstants.DevToolsDir + @"\AhkScripts\OpenDirAndChromeForReleaseArtwork.ahk";
@@ -126,22 +114,6 @@ namespace SortOutMyMusicLib.Lib
             var cmdArgs = string.Concat(ahkScriptName, " \"", googleUrl, "\" \"", dirPath, "\"");
             Log.Info(cmdArgs);
             _processRunner.Exec(ahkPath, cmdArgs, _appConstants.DevToolsDir + @"\AhkScripts");
-        }
-
-        private void RenameSingleAcceptableFolderImageWhenWrongName(IList<string> dirCoverImages, ContainerDir dir)
-        {
-            if (dirCoverImages.Count != 1 || HasFolderImageFilename(dirCoverImages))
-                return;
-            var newPath = string.Concat(dir.Path, "\\", _appConstants.FolderImageFilename);
-            _fileSystemHelpers.RenameIfThereIsAnExistingFileAt(newPath);
-            File.Move(dirCoverImages[0], newPath);
-            Log.Info(string.Concat("Renamed Folder Image: ", newPath));
-            dir.FolderImagePath = newPath;
-        }
-
-        private bool HasFolderImageFilename(IList<string> dirCoverImages)
-        {
-            return String.Equals(Path.GetFileName(dirCoverImages[0]), _appConstants.FolderImageFilename, StringComparison.CurrentCultureIgnoreCase);
         }
     }
 }

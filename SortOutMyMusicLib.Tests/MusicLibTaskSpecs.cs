@@ -95,6 +95,9 @@ namespace SortOutMyMusicLib.Tests
 
             private It should_rename_incorrectly_named_folder_images = () =>
                 ContainerDirTasks.WasToldTo(x => x.RenameSingleAcceptableFolderImageWhenWrongName(FolderImagePaths, ContainerDirsInMusicRoot[0]));
+
+            private It should_use_a_cover_image_as_a_folder_image_where_possible = () =>
+                ContainerDirTasks.WasToldTo(x => x.UseACoverImageAsFolderImageIfPossible(FolderImagePaths, ContainerDirsInMusicRoot[0], Arg.IsAny<IssueLog>()));
         }
     }
 }
