@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using log4net;
 
 namespace SortOutMyMusicLib.Lib
@@ -9,6 +10,7 @@ namespace SortOutMyMusicLib.Lib
     {
         void RenameSingleAcceptableFolderImageWhenWrongName(IList<string> dirCoverImages, ContainerDir containerDir);
         void UseACoverImageAsFolderImageIfPossible(IList<string> dirCoverImages, ContainerDir containerDir, IssueLog issues);
+        void CheckTracksAreInITunesLib(ContainerDir containerDir, IssueLog issues);
     }
 
     public class ContainerDirTasks: IContainerDirTasks
@@ -16,13 +18,15 @@ namespace SortOutMyMusicLib.Lib
         private readonly IAppConstants _appConstants;
         private readonly IFileSystemHelpers _fileSystemHelpers;
         private readonly IImageHelpers _imageHelpers;
+        private readonly IITunesLibraryHelper _iTunesLibraryHelper;
         private static readonly ILog Log = LogManager.GetLogger(typeof (ContainerDirTasks));
 
-        public ContainerDirTasks(IAppConstants appConstants, IFileSystemHelpers fileSystemHelpers, IImageHelpers imageHelpers)
+        public ContainerDirTasks(IAppConstants appConstants, IFileSystemHelpers fileSystemHelpers, IImageHelpers imageHelpers, IITunesLibraryHelper iTunesLibraryHelper)
         {
             _appConstants = appConstants;
             _fileSystemHelpers = fileSystemHelpers;
             _imageHelpers = imageHelpers;
+            _iTunesLibraryHelper = iTunesLibraryHelper;
         }
 
         public void RenameSingleAcceptableFolderImageWhenWrongName(IList<string> dirCoverImages, ContainerDir containerDir)
@@ -43,6 +47,15 @@ namespace SortOutMyMusicLib.Lib
             if (containerDir.HasFolderImage) return;
             Log.Warn("Folder image needed");
             issues.NeedToFindACoverImage = true;
+        }
+
+        public void CheckTracksAreInITunesLib(ContainerDir containerDir, IssueLog issues)
+        {
+            var notInLib = containerDir.Files.Select(f => f.Path).Where(fp => !_iTunesLibraryHelper.TrackIsInLibrary(fp)).ToList();
+            if (notInLib.Count == 0)
+                return;
+            Log.WarnFormat("{0}/{1} tracks not in ITunes Library", notInLib.Count, containerDir.Files.Count);
+            issues.TracksNotInITunes = true;
         }
 
         private bool HasFolderImageFilename(IList<string> dirCoverImages)

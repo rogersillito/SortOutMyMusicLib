@@ -68,6 +68,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ContainerDirTasks_CheckTracksAreInITunesLib_Specs.cs" />
     <Compile Include="ContainerDirTasks_RenameSingleAcceptableFolderImageWhenWrongName_Specs.cs" />
     <Compile Include="ContainerDirTasks_UseACoverImageAsFolderImageIfPossible_Specs.cs" />
     <Compile Include="FileSystemHelpersSpecs.cs" />

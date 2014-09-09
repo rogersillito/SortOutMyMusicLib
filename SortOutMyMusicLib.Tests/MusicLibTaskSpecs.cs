@@ -98,6 +98,9 @@ namespace SortOutMyMusicLib.Tests
 
             private It should_use_a_cover_image_as_a_folder_image_where_possible = () =>
                 ContainerDirTasks.WasToldTo(x => x.UseACoverImageAsFolderImageIfPossible(FolderImagePaths, ContainerDirsInMusicRoot[0], Arg.IsAny<IssueLog>()));
+
+            private It should_check_all_tracks_are_in_itunes = () =>
+                ContainerDirTasks.WasToldTo(x => x.CheckTracksAreInITunesLib(ContainerDirsInMusicRoot[0], Arg.IsAny<IssueLog>()));
         }
     }
 }

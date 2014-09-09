@@ -50,12 +50,10 @@ namespace SortOutMyMusicLib.Lib
 
             _containerDirTasks.RenameSingleAcceptableFolderImageWhenWrongName(dirImages, containerDir);
             _containerDirTasks.UseACoverImageAsFolderImageIfPossible(dirImages, containerDir, issues);
+            _containerDirTasks.CheckTracksAreInITunesLib(containerDir, issues);
             return;
 
             //TODO: move tasks to ContainerDirTasks and test..
-            // TASK: check if all tracks in this dir are in iTunes lib
-            CheckTracksAreInITunesLib(containerDir, issues);
-
             // TASK: check required metadata is present
             CheckRequiredTagMetadataExists(containerDir, issues);
 
@@ -88,16 +86,6 @@ namespace SortOutMyMusicLib.Lib
         private void CheckRequiredTagMetadataExists(ContainerDir containerDir, IssueLog issues)
         {
             issues.MetadataNeedsFixing = !_tagMetadataHelper.ValidateMetadataIn(containerDir);
-        }
-
-        private void CheckTracksAreInITunesLib(ContainerDir containerDir, IssueLog issues)
-        {
-            var notInLib = containerDir.Files.Select(f => f.Path).Where(fp => !_iTunesLibraryHelper.TrackIsInLibrary(fp)).ToList();
-            if (notInLib.Count == 0)
-                return;
-
-            Log.WarnFormat("{0}/{1} tracks not in ITunes Library", notInLib.Count, containerDir.Files.Count);
-            issues.TracksNotInITunes = true;
         }
 
         private void OpenHelperAppsToFixMetadata(string dirPath)
