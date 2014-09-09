@@ -23,9 +23,11 @@ namespace SortOutMyMusicLib.Tests
 
             Establish that = () =>
             {
+                depends.on(IssueLog);
                 ITunesHelper = depends.on<IITunesLibraryHelper>();
                 DirToDoList = depends.on<IDirToDoList>();
                 ContainerDirTasks = depends.on<IContainerDirTasks>();
+                TagMetadataHelper = depends.on<ITagMetadataHelper>();
                 ImageHelpers = depends.on<IImageHelpers>();
 
                 ContainerDirsInMusicRoot.Add(new ContainerDir
@@ -53,6 +55,7 @@ namespace SortOutMyMusicLib.Tests
                     .SetupGet(x => x.MyMusicRoot)
                     .Returns(MusicRoot);
 
+                
                 depends.on(AppConstants.Object);
             };
 
@@ -64,10 +67,12 @@ namespace SortOutMyMusicLib.Tests
             public static IContainerDirTasks ContainerDirTasks;
             public static IImageHelpers ImageHelpers;
             public static IList<string> FolderImagePaths = new List<string>();
+            public static ITagMetadataHelper TagMetadataHelper;
+            public static IssueLog IssueLog;
         }
 
         [Subject(typeof(MusicLibTask))]
-        public class when_InitialiseAndStartDirScan_is_called_and_there_are_dirs_to_scan : context
+        public class when_InitialiseAndStartDirScan_is_called_and_there_is_a_dir_to_scan_where_no_issues_are_found : context
         {
             Establish that = () => 
                 DirToDoList.WhenToldTo(x => x.GetNext()).Return(ContainerDirsInMusicRoot[0]);
@@ -97,10 +102,13 @@ namespace SortOutMyMusicLib.Tests
                 ContainerDirTasks.WasToldTo(x => x.RenameSingleAcceptableFolderImageWhenWrongName(FolderImagePaths, ContainerDirsInMusicRoot[0]));
 
             private It should_use_a_cover_image_as_a_folder_image_where_possible = () =>
-                ContainerDirTasks.WasToldTo(x => x.UseACoverImageAsFolderImageIfPossible(FolderImagePaths, ContainerDirsInMusicRoot[0], Arg.IsAny<IssueLog>()));
+                ContainerDirTasks.WasToldTo(x => x.UseACoverImageAsFolderImageIfPossible(FolderImagePaths, ContainerDirsInMusicRoot[0], IssueLog));
 
             private It should_check_all_tracks_are_in_itunes = () =>
-                ContainerDirTasks.WasToldTo(x => x.CheckTracksAreInITunesLib(ContainerDirsInMusicRoot[0], Arg.IsAny<IssueLog>()));
+                ContainerDirTasks.WasToldTo(x => x.CheckTracksAreInITunesLib(ContainerDirsInMusicRoot[0], IssueLog));
+
+            private It should_validate_metadata_for_all_tracks = () =>
+                TagMetadataHelper.WasToldTo(x => x.ValidateMetadataIn(ContainerDirsInMusicRoot[0], IssueLog));
         }
     }
 }

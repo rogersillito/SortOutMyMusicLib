@@ -36,6 +36,10 @@
     <Reference Include="developwithpassion.specifications.moq">
       <HintPath>..\packages\developwithpassion.specifications.moq.0.6.0\lib\developwithpassion.specifications.moq.dll</HintPath>
     </Reference>
+    <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="Machine.Fakes">
       <HintPath>..\packages\Machine.Fakes.0.5.1\lib\net40\Machine.Fakes.dll</HintPath>
     </Reference>
@@ -71,6 +75,7 @@
     <Compile Include="ContainerDirTasks_CheckTracksAreInITunesLib_Specs.cs" />
     <Compile Include="ContainerDirTasks_RenameSingleAcceptableFolderImageWhenWrongName_Specs.cs" />
     <Compile Include="ContainerDirTasks_UseACoverImageAsFolderImageIfPossible_Specs.cs" />
+    <Compile Include="DirToDoListSpecs.cs" />
     <Compile Include="FileSystemHelpersSpecs.cs" />
     <Compile Include="MusicLibTaskSpecs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

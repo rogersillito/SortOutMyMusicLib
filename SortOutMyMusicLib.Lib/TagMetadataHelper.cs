@@ -10,16 +10,17 @@ namespace SortOutMyMusicLib.Lib
 {
     public interface ITagMetadataHelper
     {
-        bool ValidateMetadataIn(ContainerDir directory);
+        void ValidateMetadataIn(ContainerDir directory, IssueLog issues);
     }
 
     public class TagMetadataHelper : ITagMetadataHelper
     {
+        //TODO: log creator... http://stackoverflow.com/questions/16796690/c-sharp-static-readonly-log4net-logger-any-way-to-change-logger-in-unit-test
         private static readonly ILog Log = LogManager.GetLogger(typeof (TagMetadataHelper));
         private IDictionary<string, HashSet<dynamic>> _consistencyDictionary;
         private bool _isValid;
 
-        public bool ValidateMetadataIn(ContainerDir directory)
+        public void ValidateMetadataIn(ContainerDir directory, IssueLog issues)
         {
             _isValid = false;
             _consistencyDictionary = new Dictionary<string, HashSet<dynamic>>();
@@ -33,7 +34,7 @@ namespace SortOutMyMusicLib.Lib
                 tLFile.Dispose();
             }
             CheckConsistency();
-            return _isValid;
+            issues.MetadataNeedsFixing = !_isValid;
         }
 
         private void CheckCoverImagesIn(MediaFile file)

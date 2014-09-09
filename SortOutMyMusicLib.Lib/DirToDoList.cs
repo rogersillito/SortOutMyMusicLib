@@ -28,6 +28,7 @@ namespace SortOutMyMusicLib.Lib
 
         public ContainerDir GetNext()
         {
+            //TODO: establish my 'workflow' before going any further - get next, whitelist, re-check, run external processes?
             if (_list.Count == 0)
                 return null;
             var dir = _list[0];
