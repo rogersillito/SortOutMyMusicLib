@@ -14,8 +14,22 @@ namespace SortOutMyMusicLib
             log4net.Config.XmlConfigurator.Configure();
             try
             {
-                var container = DependencyResolverInitializer.Initialize();
-                container.GetInstance<MusicLibTask>().InitialiseAndStartDirScan();
+                var options = new Options();
+                if (CommandLine.Parser.Default.ParseArguments(args, options))
+                {
+                    var container = DependencyResolverInitializer.Initialize();
+                    switch (options.Mode)
+                    {
+                        case Options.ProcessingMode.Rebuild:
+                            container.GetInstance<RebuildTask>().RebuildFolderStructure(options.SourceDir, options.RebuildOverwrite, options.OutDir);
+                            return;
+                        case Options.ProcessingMode.DirScan:
+                            container.GetInstance<MusicLibTask>().InitialiseAndStartDirScan();
+                            return;
+                    }
+                }
+                // Display the default usage information
+                Console.WriteLine(options.GetUsage());
             }
             catch (Exception e)
             {

@@ -2,6 +2,7 @@
 using StructureMap;
 using StructureMap.Configuration.DSL;
 using StructureMap.Graph;
+using SystemWrapper.IO;
 
 namespace SortOutMyMusicLib
 {
@@ -26,6 +27,7 @@ namespace SortOutMyMusicLib
                 {
                     scan.TheCallingAssembly();
                     scan.AssemblyContainingType<IConfigReader>();
+                    scan.AssemblyContainingType<IFileWrap>();
                     scan.LookForRegistries();
                     scan.WithDefaultConventions();
                 });

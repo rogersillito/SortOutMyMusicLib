@@ -51,7 +51,7 @@ namespace SortOutMyMusicLib.Tests
                 FileSystemHelpers.WasNotToldTo(x => x.RenameIfThereIsAnExistingFileAt(Arg.IsAny<string>()));
 
             private It should_not_rename_a_folder_image = () =>
-                FileSystemHelpers.WasNotToldTo(x => x.Rename(Arg.IsAny<string>(), Arg.IsAny<string>()));
+                FileSystemHelpers.WasNotToldTo(x => x.Rename(Arg.IsAny<string>(), Arg.IsAny<string>(), false));
 
             protected static List<string> DirCoverImages;
             protected static ContainerDir ContainerDir;
@@ -112,7 +112,7 @@ namespace SortOutMyMusicLib.Tests
                 FileSystemHelpers.WasToldTo(x => x.RenameIfThereIsAnExistingFileAt(ExpectedFolderImagePath));
 
             private It should_rename_a_folder_image = () =>
-                FileSystemHelpers.WasToldTo(x => x.Rename(DirCoverImages[0], ExpectedFolderImagePath));
+                FileSystemHelpers.WasToldTo(x => x.Rename(DirCoverImages[0], ExpectedFolderImagePath, false));
 
             private It should_set_a_folder_image_path_on_the_ContainerDir = () =>
                 ContainerDir.FolderImagePath.ShouldEqual(ExpectedFolderImagePath);

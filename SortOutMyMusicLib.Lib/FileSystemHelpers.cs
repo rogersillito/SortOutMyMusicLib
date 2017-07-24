@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using SystemWrapper.IO;
+using log4net;
 
 namespace SortOutMyMusicLib.Lib
 {
@@ -11,13 +12,15 @@ namespace SortOutMyMusicLib.Lib
     {
         void RenameIfThereIsAnExistingFileAt(string filePath);
         IList<ContainerDir> GetContainerDirsIn(string musicRoot);
-        void Rename(string oldPath, string newPath);
+        void Rename(string oldPath, string newPath, bool allowReplace = false);
+        string MakeStringPathSafe(string input);
     }
 
     public class FileSystemHelpers : IFileSystemHelpers
     {
         private readonly IDirWalker _dirWalker;
         private readonly IFileWrap _fileWrap;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(FileSystemHelpers));
 
         public FileSystemHelpers(IDirWalker dirWalker, IFileWrap fileWrap)
         {
@@ -31,9 +34,28 @@ namespace SortOutMyMusicLib.Lib
             return GetPathsByContainerDirFrom(allMediaFiles);
         }
 
-        public void Rename(string oldPath, string newPath)
+        public void Rename(string oldPath, string newPath, bool allowReplace = false)
         {
+            if (File.Exists(newPath))
+            {
+                if (!allowReplace)
+                {
+                    Log.WarnFormat("Rename target exists (allowReplace='false') {0} => {1}", oldPath, newPath);
+                    return;
+                }
+                File.Delete(newPath);
+            }
+            var dir = Path.GetDirectoryName(newPath);
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
             _fileWrap.Move(oldPath, newPath);
+        }
+
+        public string MakeStringPathSafe(string input)
+        {
+            const char replacement = '_';
+            Array.ForEach(Path.GetInvalidFileNameChars(), c => input = input.Replace(c.ToString(), replacement.ToString()));
+            return input;
         }
 
         private IList<ContainerDir> GetPathsByContainerDirFrom(IEnumerable<string> filePaths)

@@ -1,0 +1,3 @@
+option to pause on each containerdir? (default - skip if no issues)
+
+for rebuild - handle cover images that might be orphaned once media files are moved: new option to move with media files?
