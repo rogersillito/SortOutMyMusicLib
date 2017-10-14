@@ -55,7 +55,12 @@ namespace SortOutMyMusicLib.Lib
                     var tLFile = TagLibFile.Create(fp);
                     var filename = Path.GetFileName(fp);
                     var album = _fileSystemHelpers.MakeStringPathSafe(tLFile.Tag.Album ?? "");
-                    var artist = _fileSystemHelpers.MakeStringPathSafe(string.Join(", ", tLFile.Tag.AlbumArtists));
+                    var artistTag = string.Join(", ", tLFile.Tag.AlbumArtists).Trim();
+                    if (string.IsNullOrWhiteSpace(artistTag))
+                        artistTag = string.Join(", ", tLFile.Tag.Artists).Trim();
+                    if (string.IsNullOrWhiteSpace(artistTag))
+                        artistTag = string.Join(", ", tLFile.Tag.Performers).Trim();
+                    var artist = _fileSystemHelpers.MakeStringPathSafe(artistTag);
                     var newPath = "";
                     var isValid = !string.IsNullOrWhiteSpace(album) && !string.IsNullOrWhiteSpace(artist);
                     if (isValid)
