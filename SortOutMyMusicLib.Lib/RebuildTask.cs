@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,8 +24,8 @@ namespace SortOutMyMusicLib.Lib
 
         public void RebuildFolderStructure(string sourceDir, bool rebuildOverwrite, string outDir = null)
         {
-            _sourceDir = sourceDir;
-            _outDir = outDir ?? sourceDir;
+            _sourceDir = _fileSystemHelpers.StripPathTrailingSlashes(sourceDir);
+            _outDir = outDir == null ? _sourceDir : _fileSystemHelpers.StripPathTrailingSlashes(outDir);
             //Console.WriteLine(_outDir);
             //Console.WriteLine(_sourceDir);
 
@@ -39,7 +39,7 @@ namespace SortOutMyMusicLib.Lib
                 }
                 if (f.RequiresMove)
                 {
-                    Console.WriteLine("MOVING: " + f.NewPath);
+                    Console.WriteLine("MOVING: " + f.OldPath + " > " + f.NewPath);
                     _fileSystemHelpers.Rename(f.OldPath, f.NewPath, rebuildOverwrite);
                 }
             }
@@ -52,7 +52,21 @@ namespace SortOutMyMusicLib.Lib
             {
                 if (fp.IsMediaFile())
                 {
-                    var tLFile = TagLibFile.Create(fp);
+                    TagLibFile tLFile;
+                    try
+                    {
+                        tLFile = TagLibFile.Create(fp);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"{e.GetType()}: {e.Message}");
+                        return new RebuildWalkResult
+                        {
+                            IsValidToMove = false,
+                            IsMediaFile = true,
+                            OldPath = fp,
+                        };
+                    }
                     var filename = Path.GetFileName(fp);
                     var album = _fileSystemHelpers.MakeStringPathSafe(tLFile.Tag.Album ?? "");
                     var artistTag = string.Join(", ", tLFile.Tag.AlbumArtists).Trim();

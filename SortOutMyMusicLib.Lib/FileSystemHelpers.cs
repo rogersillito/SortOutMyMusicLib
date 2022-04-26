@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using SystemWrapper.IO;
 using log4net;
 
@@ -14,6 +15,7 @@ namespace SortOutMyMusicLib.Lib
         IList<ContainerDir> GetContainerDirsIn(string musicRoot);
         void Rename(string oldPath, string newPath, bool allowReplace = false);
         string MakeStringPathSafe(string input);
+        string StripPathTrailingSlashes(string path);
     }
 
     public class FileSystemHelpers : IFileSystemHelpers
@@ -21,6 +23,8 @@ namespace SortOutMyMusicLib.Lib
         private readonly IDirWalker _dirWalker;
         private readonly IFileWrap _fileWrap;
         private static readonly ILog Log = LogManager.GetLogger(typeof(FileSystemHelpers));
+
+        private readonly char[] _pathReplaceChars = Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars()).Distinct().ToArray();
 
         public FileSystemHelpers(IDirWalker dirWalker, IFileWrap fileWrap)
         {
@@ -54,8 +58,9 @@ namespace SortOutMyMusicLib.Lib
         public string MakeStringPathSafe(string input)
         {
             const char replacement = '_';
-            Array.ForEach(Path.GetInvalidFileNameChars(), c => input = input.Replace(c.ToString(), replacement.ToString()));
-            return input;
+            // TODO: probably very inefficient!!
+            Array.ForEach(_pathReplaceChars, c => input = input.Replace(c.ToString(), replacement.ToString()));
+            return Regex.Replace(input, @"\.$", "_");
         }
 
         private IList<ContainerDir> GetPathsByContainerDirFrom(IEnumerable<string> filePaths)
@@ -74,6 +79,11 @@ namespace SortOutMyMusicLib.Lib
                     }).ToList()
                 });
             return containerDirs.ToList();
+        }
+
+        public string StripPathTrailingSlashes(string path)
+        {
+            return Regex.Replace(path, @"\\+$", "");
         }
 
         public void RenameIfThereIsAnExistingFileAt(string filePath)
